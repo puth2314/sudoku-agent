@@ -1,5 +1,17 @@
 from copy import deepcopy
 
+
+BOX_LENGTH = 3
+BOARD_LENGTH = 9
+
+
+class Choice():
+    def __init__(self):
+        self.number = None
+        self.row = None
+        self.column = None
+
+
 def find_empty_cell(sudoku_board):
 
     for row in range(9):
@@ -42,23 +54,22 @@ def get_choices():
     return {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
 
-def backtrack_solve(sudoku_board, stop_at_first_solution:bool=True, max_solutions=2):
+def backtrack_solve(sudoku_board,
+                    nth_solution_stop: int = 1):
+    
     solutions_list = list()
 
     def recursive_backtrack_solve(sudoku_board):
         """
         maybe implement using the coords to represent the child node?
         """
-        # solution is when at end of tree, which is when no empty cells
+        # solution is when at end of tree, which is when no more empty cells
         if find_empty_cell(sudoku_board) is None:
             solutions_list.append(deepcopy(sudoku_board))
-            # either stop/continue the recursion when solution is found
-            if stop_at_first_solution:
-                return True
-            if len(solutions_list) == max_solutions:
-                return True
-            return False
+            # stop the recursion when the nth solution, otherwise exit just this recursion nest
+            return len(solutions_list) == nth_solution_stop
         
+        #my choice = Choice()
         row, col = find_empty_cell(sudoku_board)
             
         for choice in get_choices():
@@ -71,7 +82,7 @@ def backtrack_solve(sudoku_board, stop_at_first_solution:bool=True, max_solution
                 sudoku_board[row][col] = 0 # go backward to parent node (aka backtracking)
             # (implicit) continue the iteration
 
-        # no more valid choices, exit this recursion nest
+        # no more valid choices, exit just this recursion nest
         return False # continue the recursion
 
     recursive_backtrack_solve(sudoku_board)
@@ -80,17 +91,16 @@ def backtrack_solve(sudoku_board, stop_at_first_solution:bool=True, max_solution
 
 
 def print_solutions(solutions_list):
-    if len(solutions_list) == 1:
-        print("Found a unique solution: ")
-        print(solutions_list)
-    elif len(solutions_list) > 1:
-        print(f"Found {len(solutions_list)} solutions: ")
-        for i, solution in enumerate(solutions_list, start=1):
-            print(f"Solution {i}: ")
-            print(solution)
+    num_solutions = len(solutions_list)
+    if num_solutions == 0:
+        print("Found no solution.")
+    elif num_solutions == 1:
+        print("Found a unique solution:")
+        print(solutions_list[0])
     else:
-        print("No solution exists.")
-
+        print("Found {} solutions:".format(len(solutions_list)))
+        for i, solution in enumerate(solutions_list, start=1):
+            print(solution)
 
 
 if __name__ == "__main__":
@@ -119,8 +129,6 @@ if __name__ == "__main__":
         [0, 0, 0, 0, 8, 0, 0, 7, 9]
     ]
 
-    # backtrack_solve(sudoku_board, find_all_solutions=True, solutions_list=solutions_list)
-    # print_solutions(solutions_list)
-    solutions_list = backtrack_solve(sudoku_board, stop_at_first_solution=False)
-    print(solutions_list)
+    solutions_list = backtrack_solve(sudoku_board, nth_solution_stop=1)
+    print_solutions(solutions_list)
 
