@@ -1,10 +1,18 @@
 import keyboard
 import pyautogui
 import time
+import dataclasses
 
 import sudoku_writer
 import sudoku_reader
 import sudoku_solver
+
+@dataclasses.dataclass
+class CalibrationVector:
+    x_topleft: int = 0
+    y_topleft: int = 0
+    cell_size: int = 0
+    box_gap:   int = 0
 
 
 def calibrate_grid_size():
@@ -36,9 +44,9 @@ def calibrate_grid_size():
 
     def calculate_cell_size(x1, y1, x2, y2):
         # assert x2 - x1 > 7
-        cell_size_x = x2 - x1 # abs(x2 - x1)
-        cell_size_y = y2 - y1 # abs(y2 - y1)
-        cell_size_avg = (cell_size_x - cell_size_y) / 2
+        cell_distance_x = x2 - x1 # abs(x2 - x1)
+        cell_distance_y = y2 - y1 # abs(y2 - y1)
+        cell_size_avg = (cell_distance_x + cell_distance_y) / 2
         return int(cell_size_avg)
     
     cell_size = calculate_cell_size(x1, y1, x2, y2)
@@ -49,9 +57,9 @@ def calibrate_grid_size():
         # abs(y3 - y1) = box_gap_y * 2 + cell_size * 8
         # => box_gap_y = (abs(y3 - y1) - cell_size * 8) / 2
         # end derivation
-        box_gap_x = x3 - x1
-        box_gap_y = y3 - y1
-        box_gap_avg = (box_gap_x + box_gap_y - (cell_size * 16)) / 4
+        board_distance_x = x3 - x1 # abs(x3 - x1)
+        board_distance_y = y3 - y1 # abs(y3 - y1)
+        box_gap_avg = (board_distance_x + board_distance_y - (cell_size * 16)) / 4
         return int(box_gap_avg)
     
     box_gap = calculate_box_gap(x1, y1, x3, y3, cell_size)
@@ -60,15 +68,15 @@ def calibrate_grid_size():
     print(f"Estimated cell size: {cell_size} px")
     print(f"Estimated box gap: {box_gap} px")
 
-    return x1, y1, cell_size, box_gap
+    return CalibrationVector(x1, y1, cell_size, box_gap)
 
 
 def main():
-    x_topleft, y_topleft, cell_size, box_gap = calibrate_grid_size()
+    calibration_vector = calibrate_grid_size()
 
-    board = sudoku_reader.fill_board_from_screenshot(x_topleft, y_topleft, cell_size, box_gap)
-    solution = sudoku_solver.backtrack_solve(board)
-    sudoku_writer.move_through_board(x_topleft, y_topleft, cell_size, box_gap, solution[0])
+    board = sudoku_reader.fill_board_from_screenshot(calibration_vector.x_topleft, calibration_vector.y_topleft, calibration_vector.cell_size, calibration_vector.box_gap)
+    sudoku_solver.backtrack_solve(board)
+    sudoku_writer.move_through_board(calibration_vector.x_topleft, calibration_vector.y_topleft, calibration_vector.cell_size, calibration_vector.box_gap, board)
 
 
 if __name__ == "__main__":
