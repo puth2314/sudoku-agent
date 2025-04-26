@@ -1,3 +1,7 @@
+# Sudoku Agent
+
+A simple sudoku solver.
+
 
 ## Design Choices
 
