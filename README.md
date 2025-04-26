@@ -1,11 +1,3 @@
----
-title: Sudoku Agent
-date: 2025-04-18 16:30:00 +0700
-description: A simple sudoku solver.
-categories: [Software, Programming]
-tags: [python, opencv, canny-edge, template-matching, backtracking]
-pin: true
----
 
 ## Design Choices
 
